@@ -1,0 +1,39 @@
+This repo contains some cdi projects I created to show an issue with cdi and specifically interceptors
+where the 'new style' interceptor is used (Annotation with @InterceptorBinding)
+
+This is what I'm doing:
+
+There is a plain servlet and a REST resource class. I can call these with /test resp. /rest
+What it returns is OK plus a '1' and/or '2'. The '1' is added by TestInterceptor, the '2' by TestInterceptor2.
+So this way you can simply check if the interceptors work without having to look in the log file.
+
+The Logic class is injected onto the servlet (and also the resource) which has two methods which will be called.
+The first method doit() is supposed to be intercepted by the 'new style' interceptor.
+The second method doit2() is supposed to be intercepted by the 'old style' interceptor.
+The interceptors add a '1' resp. '2' to the message on a request scoped Context class which is injected onto the interceptors.
+The message from the Context class is appended to 'OK' and returned to the caller.
+
+You can find the code for this in the project.
+
+	cdi-interceptor-test		
+
+This project contains all classes and will build a war.
+
+Deploying the war in glassfish and calling the servlet and resource works fine. No problems here.
+
+But now I split up things into different projects.
+
+superpom			This is the parent for all cdi projects. Contains some basic setup required to build the projects.
+cdi-base-test			Only contains the Context class which has a String message which is populated by the interceptors
+cdi-extension-test		An attempt to get more information by using the extension mechanism. Not really related.
+cdi-interceptor-new-test	This contains the 'new style' interceptor
+cdi-interceptor-old-test	This contains the 'old style' interceptor
+cdi-test			This is the main project which is build as a war to be deployed to glassfish
+cdi-test-ear			This is an ear which contains cdi-test which can be used to deploy. An attempt to fix the problem (no luck)
+rebuild.sh			A script to rebuild all projects
+
+The problem I'm seeing now is that after deploying cdi-test, the 'old style' interceptor always works oke, but the 'new style' interceptor
+doesn't. If it doesn't work, it will not ever work. After redeploying and testing, sometimes it works. If it works, then it keeps working
+so something goes wrong at deployment time. Success is intermittent. Pretty weird in my opinion.
+
+
